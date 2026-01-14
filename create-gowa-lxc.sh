@@ -6,6 +6,12 @@ set -euo pipefail
 
 source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
 
+# Clean setting
+: "${SSH_CLIENT:=}"
+: "${SSH_TTY:=}"
+: "${SSH_CONNECTION:=}"
+
+
 # App metadata for the helper framework
 APP="GOWA (go-whatsapp-web-multidevice)"
 var_tags="${var_tags:-docker;gowa;whatsapp}"
