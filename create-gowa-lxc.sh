@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # =======================
-# GOWA on Proxmox LXC
+# GOWA on Proxmox LXC - script
 # - Default: DHCP
 # - To use a static IP:
 #     export IP_CIDR="192.168.1.50/24"
