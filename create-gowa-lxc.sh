@@ -11,7 +11,7 @@ set -euo pipefail
 
 source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
 
-# App metadata for the helper framework
+# App metadata for the helper framework (keep APP clean to avoid invalid hostname/installer names)
 APP="GOWA"
 var_tags="${var_tags:-docker;gowa;whatsapp}"
 var_cpu="${var_cpu:-2}"
@@ -31,6 +31,10 @@ RAND_LEN="${RAND_LEN:-24}"
 
 header_info "$APP"
 variables
+
+# Override installer name so build.func doesn't try to download a non-existent "gowa-install.sh"
+var_install="docker-install"
+
 color
 catch_errors
 
@@ -54,7 +58,7 @@ start
 build_container
 description
 
-# Ensure Docker is installed (docker.sh normally does it, but we enforce to be safe)
+# Ensure Docker is installed (docker-install should handle this, but we enforce to be safe)
 msg_info "Ensuring Docker + Compose are installed in CT ${CTID}"
 pct exec "$CTID" -- bash -lc '
 set -e
@@ -70,11 +74,10 @@ systemctl enable docker --now
 msg_ok "Docker ready"
 
 # Set container root password (container root, not Proxmox host root)
+# (pct set --password is not available on all Proxmox versions)
 msg_info "Setting container root password (random)"
-pct exec "$CTID" -- bash -lc 'command -v chpasswd >/dev/null 2>&1 || (apt-get update -y && apt-get install -y passwd)'
 pct exec "$CTID" -- bash -lc "echo root:${ROOT_PASS} | chpasswd" >/dev/null
 msg_ok "Container root password set"
-
 
 # Clone GOWA repo
 msg_info "Cloning GOWA repository"
