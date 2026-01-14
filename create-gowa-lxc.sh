@@ -71,7 +71,8 @@ msg_ok "Docker ready"
 
 # Set container root password (container root, not Proxmox host root)
 msg_info "Setting container root password (random)"
-pct exec "$CTID" -- bash -lc "echo root:${ROOT_PASS} | chpasswd"
+pct exec "$CTID" -- bash -lc 'command -v chpasswd >/dev/null 2>&1 || (apt-get update -y && apt-get install -y passwd)'
+pct exec "$CTID" -- bash -lc "echo root:${ROOT_PASS} | chpasswd" >/dev/null
 msg_ok "Container root password set"
 
 
