@@ -103,49 +103,41 @@ msg_ok "Docker + Avahi ready"
 
 
 # ---------------- Avahi: force IPv4 only + disable AAAA ----------------
-msg_info "Configuring Avahi for IPv4-only on eth0 + disabling AAAA"
-pct exec "$CTID" -- bash -lc '
+msg_info "Installing and configuring Avahi (IPv4 only, no AAAA)"
+
+pct exec "$CTID" -- bash -lc "
   set -e
-  CONF="/etc/avahi/avahi-daemon.conf"
 
-  # Ensure sections exist
-  grep -q "^\[server\]" "$CONF" || printf "\n[server]\n" >> "$CONF"
-  grep -q "^\[publish\]" "$CONF" || printf "\n[publish]\n" >> "$CONF"
+  apt-get update
+  apt-get install -y --reinstall avahi-daemon avahi-utils
 
-  set_kv () {
-    local section="$1" key="$2" value="$3"
-    # If key exists (commented or not) inside section -> replace; else insert right after section header
-    if awk -v s="[$section]" -v k="$key" '
-      $0==s {in=1; next}
-      in && $0 ~ /^\[/ {exit}
-      in && $0 ~ "^[#;]?"k"=" {found=1; exit}
-      END{exit found?0:1}
-    ' "$CONF"; then
-      awk -v s="[$section]" -v k="$key" -v v="$value" '
-        BEGIN{in=0}
-        $0==s {in=1; print; next}
-        in && $0 ~ /^\[/ {in=0}
-        in && $0 ~ "^[#;]?"k"=" {print k"="v; next}
-        {print}
-      ' "$CONF" > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
-    else
-      awk -v s="[$section]" -v k="$key" -v v="$value" '
-        BEGIN{done=0}
-        {print}
-        $0==s && !done {print k"="v; done=1}
-      ' "$CONF" > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
-    fi
-  }
+  mkdir -p /etc/avahi
 
-  set_kv server  use-ipv4 yes
-  set_kv server  use-ipv6 no
-  set_kv server  allow-interfaces eth0
-  set_kv publish publish-aaaa-on-ipv4 no
-  set_kv publish publish-a-on-ipv6 no
+  cat >/etc/avahi/avahi-daemon.conf <<'EOF'
+[server]
+use-ipv4=yes
+use-ipv6=no
+allow-interfaces=eth0
+ratelimit-interval-usec=1000000
+ratelimit-burst=1000
+
+[wide-area]
+enable-wide-area=yes
+
+[publish]
+publish-aaaa-on-ipv4=no
+publish-a-on-ipv6=no
+publish-hinfo=no
+publish-workstation=no
+
+EOF
 
   systemctl restart avahi-daemon
-'
-msg_ok "Avahi IPv4-only/AAAA disabled configuration applied"
+  systemctl enable avahi-daemon
+"
+
+msg_ok "Avahi configured for IPv4-only mDNS on eth0"
+
 
 # ---------------- set CT hostname (base .local name) ----------------
 msg_info "Configuring base mDNS hostname (${MDNS_BASE}.local)"
