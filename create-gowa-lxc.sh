@@ -4,7 +4,7 @@
 # - No git clone (image-based)
 # - Separate volumes per instance (separate WhatsApp sessions)
 # - Shared Basic Auth + shared webhook config
-# - Adds LAN DNS name via mDNS/Avahi: e.g. gowa.local -> LXC IP
+# - Adds LAN DNS name via mDNS/Avahi: e.g. gowa.lan -> LXC IP
 #
 # Fix: IP detection/Notes were polluted by build.func colored output.
 # We now read the IP using pct exec and ONLY accept a clean IPv4 via regex,
@@ -37,11 +37,11 @@ GOWA_USER="${GOWA_USER:-admin}"
 RAND_LEN="${RAND_LEN:-24}"
 
 # Webhook (optional; shared)
-WEBHOOK_URL="${WEBHOOK_URL:-http://whatsapp-bot.local:8080/webhook}"
+WEBHOOK_URL="${WEBHOOK_URL:-http://whatsapp-bot.lan:8080/webhook}"
 WEBHOOK_EVENTS="${WEBHOOK_EVENTS:-message,message.ack}"
 WEBHOOK_SECRET="${WEBHOOK_SECRET:-}" # if empty -> generated
 
-# mDNS/DNS on LAN (Avahi .local)
+# mDNS/DNS on LAN (Avahi .lan)
 MDNS_BASE="${MDNS_BASE:-${var_hostname}}"
 
 header_info "$APP"
@@ -83,7 +83,7 @@ build_container
 description
 
 # ---------------- Docker + Avahi (mDNS) ----------------
-msg_info "Installing Docker + Avahi (mDNS .local)"
+msg_info "Installing Docker + Avahi (mDNS .lan)"
 pct exec "$CTID" -- bash -lc '
 set -e
 export DEBIAN_FRONTEND=noninteractive
@@ -139,8 +139,8 @@ EOF
 msg_ok "Avahi configured for IPv4-only mDNS on eth0"
 
 
-# ---------------- set CT hostname (base .local name) ----------------
-msg_info "Configuring base mDNS hostname (${MDNS_BASE}.local)"
+# ---------------- set CT hostname (base .lan name) ----------------
+msg_info "Configuring base mDNS hostname (${MDNS_BASE}.lan)"
 pct exec "$CTID" -- bash -lc "
 set -e
 echo '${MDNS_BASE}' > /etc/hostname
@@ -254,19 +254,19 @@ DOCKER_IP_2="$(printf '%s' "$DOCKER_IP_2_RAW" | strip_ansi | first_ipv4 || true)
 
 GOWA_URL_1_IP="http://${LXC_IP}:${HOST_PORT}"
 GOWA_URL_2_IP="http://${LXC_IP}:${HOST_PORT_2}"
-GOWA_URL_1_DNS="http://${MDNS_BASE}.local:${HOST_PORT}"
-GOWA_URL_2_DNS="http://${MDNS_BASE}.local:${HOST_PORT_2}"
+GOWA_URL_1_DNS="http://${MDNS_BASE}.lan:${HOST_PORT}"
+GOWA_URL_2_DNS="http://${MDNS_BASE}.lan:${HOST_PORT_2}"
 msg_ok "IP detection complete"
 
 # ---------------- Proxmox Notes ----------------
 msg_info "Writing Proxmox Notes"
 DESC="$(cat <<EOF
-GOWA / WhatsMeow – dual instance deployment + mDNS (.local)
+GOWA / WhatsMeow – dual instance deployment + mDNS (.lan)
 
 LXC:
 - CTID: ${CTID}
 - IP: ${LXC_IP}
-- mDNS hostname: ${MDNS_BASE}.local
+- mDNS hostname: ${MDNS_BASE}.lan
 - Root password: ${ROOT_PASS}
 
 Bridge instance 1:
@@ -295,8 +295,8 @@ Webhook (shared):
 - Events: ${WEBHOOK_EVENTS}
 
 LAN usage:
-- Instance 1: http://${MDNS_BASE}.local:${HOST_PORT}
-- Instance 2: http://${MDNS_BASE}.local:${HOST_PORT_2}
+- Instance 1: http://${MDNS_BASE}.lan:${HOST_PORT}
+- Instance 2: http://${MDNS_BASE}.lan:${HOST_PORT_2}
 EOF
 )"
 pct set "$CTID" --description "$DESC" >/dev/null
