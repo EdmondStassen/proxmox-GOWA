@@ -173,25 +173,23 @@ services:
     container_name: gowa-wa1
     restart: always
     network_mode: host
-    command:
-      - rest
-      - -p
-      - "${HOST_PORT}"
+    command: ["rest", "-p", "${HOST_PORT}"]
     volumes:
       - whatsapp1:/app/storages
     environment:
-      - APP_BASIC_AUTH=admin:${BASIC_AUTH_PASS}
-      - APP_PORT=${HOST_PORT}
-      - APP_DEBUG=true
-      - APP_OS=Chrome
-      - APP_ACCOUNT_VALIDATION=false
-      - WHATSAPP_WEBHOOK=${WEBHOOK_URL}
-      - WHATSAPP_WEBHOOK_EVENTS=message,message.ack
-      - WHATSAPP_WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      APP_BASIC_AUTH: "admin:${BASIC_AUTH_PASS}"
+      APP_PORT: "${HOST_PORT}"
+      APP_DEBUG: "true"
+      APP_OS: "Chrome"
+      APP_ACCOUNT_VALIDATION: "false"
+      WHATSAPP_WEBHOOK: "${WEBHOOK_URL}"
+      WHATSAPP_WEBHOOK_EVENTS: "message,message.ack"
+      WHATSAPP_WEBHOOK_SECRET: "${WEBHOOK_SECRET}"
 
 volumes:
   whatsapp1:
 EOF
+
 
 cat > /opt/gowa/instance2/docker-compose.yml <<EOF
 services:
@@ -200,25 +198,23 @@ services:
     container_name: gowa-wa2
     restart: always
     network_mode: host
-    command:
-      - rest
-      - -p
-      - "${HOST_PORT_2}"
+    command: ["rest", "-p", "${HOST_PORT_2}"]
     volumes:
-      - whatsapp1:/app/storages
+      - whatsapp2:/app/storages
     environment:
-      - APP_BASIC_AUTH=admin:${BASIC_AUTH_PASS}
-      - APP_PORT=${HOST_PORT_2}
-      - APP_DEBUG=true
-      - APP_OS=Chrome
-      - APP_ACCOUNT_VALIDATION=false
-      - WHATSAPP_WEBHOOK=${WEBHOOK_URL}
-      - WHATSAPP_WEBHOOK_EVENTS=message,message.ack
-      - WHATSAPP_WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      APP_BASIC_AUTH: "admin:${BASIC_AUTH_PASS}"
+      APP_PORT: "${HOST_PORT_2}"
+      APP_DEBUG: "true"
+      APP_OS: "Chrome"
+      APP_ACCOUNT_VALIDATION: "false"
+      WHATSAPP_WEBHOOK: "${WEBHOOK_URL}"
+      WHATSAPP_WEBHOOK_EVENTS: "message,message.ack"
+      WHATSAPP_WEBHOOK_SECRET: "${WEBHOOK_SECRET}"
 
 volumes:
   whatsapp2:
 EOF
+
 
 cd /opt/gowa/instance1 && docker compose up -d
 cd /opt/gowa/instance2 && docker compose up -d
