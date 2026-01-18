@@ -9,7 +9,6 @@
 #   build_container
 #   dhcp_hostname::apply    # after build_container
 
-msg_info "Loaded DHCP hostname publishing helper"
 
 dhcp_hostname::prompt() {
   # If caller already set var_hostname, don't prompt
@@ -18,8 +17,8 @@ dhcp_hostname::prompt() {
     return 0
   fi
 
-  msg_info "DHCP Hostname Publishing"
   echo
+  echo -e "${CREATING}DHCP Hostname Publishing${CL}"
   echo "Enter the hostname to publish via DHCP (letters, numbers, hyphens only)"
   echo "Example: web01, media-server"
   read -r -p "Hostname: " var_hostname
@@ -36,6 +35,7 @@ dhcp_hostname::prompt() {
     msg_error "Hostname cannot be empty after sanitizing."
     exit 1
   fi
+
   if [[ "${#var_hostname}" -gt 63 ]]; then
     msg_error "Hostname '${var_hostname}' is too long (max 63 characters)."
     exit 1
@@ -44,6 +44,7 @@ dhcp_hostname::prompt() {
   msg_ok "Using hostname: ${var_hostname}"
   export var_hostname
 }
+
 
 dhcp_hostname::apply() {
   if [[ -z "${CTID:-}" ]]; then
@@ -80,10 +81,11 @@ if [ -f /etc/os-release ]; then
   esac
 fi
 
+# Determine primary interface
 IFACE="$(ip route 2>/dev/null | awk '/^default/ {print $5; exit}')"
 [ -n "${IFACE:-}" ] || IFACE="eth0"
 
-# Only proceed if there is IPv4 on the interface
+# Require IPv4 (DHCP)
 if ! ip -4 addr show "$IFACE" 2>/dev/null | grep -q 'inet '; then
   echo "Skipping: no IPv4 address on ${IFACE}; likely not using IPv4 DHCP." >&2
   exit 0
@@ -125,7 +127,7 @@ if systemctl is-active systemd-networkd >/dev/null 2>&1; then
 > "/etc/systemd/network/99-${IFACE}-hostname.network"
 fi
 
-# Restart/renew to advertise hostname quickly
+# Restart / renew DHCP so router learns hostname immediately
 if command -v dhclient >/dev/null 2>&1; then
   dhclient -r "$IFACE" >/dev/null 2>&1 || true
   dhclient "$IFACE" >/dev/null 2>&1 || true
