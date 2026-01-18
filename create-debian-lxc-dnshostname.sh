@@ -2,7 +2,7 @@
 source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
 
 # Include DHCP hostname publisher (local or remote)
-source <(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/create-debian-lxc-dnshostname.sh)"
+source <(curl -fsSL "https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/create-debian-lxc-dnshostname.sh)"
 
 APP="Debian"
 var_tags="${var_tags:-os}"
