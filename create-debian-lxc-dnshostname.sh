@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
-
-# Include DHCP hostname publisher (local or remote)
-source <(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/create-debian-lxc-dnshostname.sh)
+# Copyright (c) 2021-2026 tteck
+# Author: tteck (tteckster)
+# License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
+# Source: https://www.debian.org/
 
 APP="Debian"
 var_tags="${var_tags:-os}"
@@ -17,9 +18,6 @@ header_info "$APP"
 variables
 color
 catch_errors
-
-# Prompt BEFORE container build so var_hostname can be used by build_container too
-dhcp_hostname::prompt
 
 function update_script() {
   header_info
@@ -38,10 +36,21 @@ function update_script() {
 }
 
 start
+
+# ------------------------------------------------------------------
+# DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
+# ------------------------------------------------------------------
+source <(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/includes/dhcp-hostname.include.sh)
+
+# Prompt for hostname
+dhcp_hostname::prompt
+
+# Create the container (CTID assigned here)
 build_container
 
-# Apply AFTER build so we have CTID and can configure inside the CT
+# Configure hostname + DHCP publishing inside the container
 dhcp_hostname::apply
+# ------------------------------------------------------------------
 
 description
 
