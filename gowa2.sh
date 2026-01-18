@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # ProxmoxVE LXC helper (build.func framework)
 # Deploys 2x GOWA/WhatsMeow instances via Docker image + Compose
+# + DHCP hostname publishing include (prompt + apply)
 
 set -euo pipefail
 
@@ -18,6 +19,13 @@ source <(curl -fsSL "$SOURCEURL")
 unset SOURCEURL
 
 # ------------------------------------------------------------------
+# DHCP Hostname Publisher include
+# ------------------------------------------------------------------
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/debian_dhcp-hostname.include.sh"
+source <(curl -fsSL "$SOURCEURL")
+unset SOURCEURL
+
+# ------------------------------------------------------------------
 # Proxmox / LXC defaults
 # ------------------------------------------------------------------
 APP="GOWA"
@@ -29,7 +37,8 @@ var_disk="${var_disk:-10}"
 var_os="${var_os:-debian}"
 var_version="${var_version:-12}"
 var_unprivileged="${var_unprivileged:-1}"
-var_hostname="${var_hostname:-gowa}"
+# Let DHCP include prompt for hostname unless caller already set var_hostname
+# var_hostname="${var_hostname:-gowa}"
 
 header_info "$APP"
 variables
@@ -42,7 +51,16 @@ catch_errors
 # Create container
 # ------------------------------------------------------------------
 start
+
+# Prompt for hostname to publish via DHCP (before build_container)
+dhcp_hostname::prompt
+
+# Create container (CTID assigned here)
 build_container
+
+# Configure hostname + DHCP publishing inside the container (after build_container)
+dhcp_hostname::apply
+
 description
 
 # ------------------------------------------------------------------
@@ -54,10 +72,8 @@ notes::init "Provisioning notes for ${APP} (CTID ${CTID})"
 notes_append() {
   if declare -F notes::append_msg >/dev/null 2>&1; then
     if notes::append_msg "test" >/dev/null 2>&1; then
-      # accepts args
       notes::append_msg "$1" >/dev/null 2>&1 || true
     else
-      # likely reads NOTE_MSG
       NOTE_MSG="$1"
       notes::append_msg >/dev/null 2>&1 || true
     fi
@@ -93,6 +109,9 @@ Generated credentials:
 - Root password: ${ROOT_PASS}
 - Basic Auth password: ${GOWA_PASS}
 - Webhook secret: ${WEBHOOK_SECRET}
+
+Hostname:
+- Published via DHCP: ${var_hostname}
 EOF
 )"
 
@@ -243,22 +262,36 @@ fi
 
 [[ -z "$LXC_IP" ]] && LXC_IP="(unknown)"
 
-GOWA_URL_1="http://${LXC_IP}:${HOST_PORT_1}"
-GOWA_URL_2="http://${LXC_IP}:${HOST_PORT_2}"
+GOWA_URL_1_IP="http://${LXC_IP}:${HOST_PORT_1}"
+GOWA_URL_2_IP="http://${LXC_IP}:${HOST_PORT_2}"
+
+# Hostname-based URLs (DHCP name)
+GOWA_URL_1_DNS="http://${var_hostname}:${HOST_PORT_1}"
+GOWA_URL_2_DNS="http://${var_hostname}:${HOST_PORT_2}"
 
 msg_ok "IP detection complete"
 
 notes_append "$(cat <<EOF
 Networking:
 - LXC IP: ${LXC_IP}
-- Instance 1: ${GOWA_URL_1}
-- Instance 2: ${GOWA_URL_2}
+- Hostname (DHCP): ${var_hostname}
+
+Clickable URLs (via hostname):
+- Instance 1: ${GOWA_URL_1_DNS}
+- Instance 2: ${GOWA_URL_2_DNS}
+
+Fallback URLs (via IP):
+- Instance 1: ${GOWA_URL_1_IP}
+- Instance 2: ${GOWA_URL_2_IP}
 EOF
 )"
 
 # ------------------------------------------------------------------
 # Final output
 # ------------------------------------------------------------------
-echo -e "${INFO}${YW}Instance 1:${CL} ${GOWA_URL_1}"
-echo -e "${INFO}${YW}Instance 2:${CL} ${GOWA_URL_2}"
+echo -e "${INFO}${YW}Hostname:${CL} ${var_hostname}"
+echo -e "${INFO}${YW}Instance 1 (hostname):${CL} ${GOWA_URL_1_DNS}"
+echo -e "${INFO}${YW}Instance 2 (hostname):${CL} ${GOWA_URL_2_DNS}"
+echo -e "${INFO}${YW}Instance 1 (IP):${CL} ${GOWA_URL_1_IP}"
+echo -e "${INFO}${YW}Instance 2 (IP):${CL} ${GOWA_URL_2_IP}"
 echo -e "${INFO}${YW}All details stored in Proxmox Notes (CTID ${CTID}).${CL}"
