@@ -36,7 +36,7 @@ update_script() {
 start
 
 # DNS hostname publishing
-SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/proxmox_notes.include.sh"
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/debian_dhcp-hostname.include.sh"
 source <(curl -fsSL "$SOURCEURL")
 unset SOURCEURL
 
@@ -44,7 +44,7 @@ dhcp_hostname::prompt
 build_container
 
 # Proxmox Notes
-SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/includes/notes.include.sh"
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/proxmox_notes.include.sh"
 source <(curl -fsSL "$SOURCEURL")
 unset SOURCEURL
 
