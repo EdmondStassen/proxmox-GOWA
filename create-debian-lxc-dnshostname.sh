@@ -74,7 +74,7 @@ include::source_url() {
 # ------------------------------------------------------------------
 # DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
 # ------------------------------------------------------------------
-SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/includes/dhcp-hostname.include.sh"
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/proxmox_notes.include.sh"
 include::source_url "$SOURCEURL"
 unset SOURCEURL
 
