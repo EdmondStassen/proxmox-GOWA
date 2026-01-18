@@ -74,6 +74,5 @@ EOF
 )"
 notes::append "$NOTES_BLOCK"; unset NOTES_BLOCK
 
-description
 msg_ok "Completed successfully!\n"
 echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
