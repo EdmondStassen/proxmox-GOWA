@@ -9,6 +9,8 @@
 #   build_container
 #   dhcp_hostname::apply    # after build_container
 
+echo "Including DHCP hostname - initiating"
+
 dhcp_hostname::prompt() {
   if [[ -n "${var_hostname:-}" ]]; then
     export var_hostname
