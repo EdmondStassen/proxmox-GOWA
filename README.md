@@ -1,4 +1,4 @@
-<b>Bash scripts - run from shell proxmox </b>
+#<b>Bash scripts - run from shell proxmox </b>
 
 Whatsapp bridge:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/create-gowa-lxc.sh)"
@@ -10,7 +10,7 @@ deb lxc with hostname:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/create-debian-lxc-dnshostname.sh)"
 
 
-<b>Scripts to be used in bash scripts for proxmox </b>
+#<b>Scripts to be used in bash scripts for proxmox </b>
 
 <b>Set DNS hostname to easily find instance</b>
 
