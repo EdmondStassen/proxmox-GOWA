@@ -11,7 +11,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-sc
 Include scripts:
 
 <b>DNS HOSTNAME </b>
-'''
+'''markdown
 # ------------------------------------------------------------------
 # DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
 # ------------------------------------------------------------------
