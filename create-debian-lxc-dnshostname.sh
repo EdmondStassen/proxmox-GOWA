@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Debian LXC Helper (lazy-loaded Proxmox Notes)
+
+# ------------------------------------------------------------------
+# Debian LXC
+# ------------------------------------------------------------------
+
 source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
 # Copyright (c) 2021-2026 tteck
 # Author: tteck (tteckster)
@@ -31,7 +37,6 @@ function update_script() {
   $STD apt update
   $STD apt -y upgrade
   msg_ok "Updated $APP LXC"
-  msg_ok "Updated successfully!"
   exit
 }
 
@@ -41,17 +46,54 @@ start
 # DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
 # ------------------------------------------------------------------
 SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/debian_dhcp-hostname.include.sh"
-source <(curl -fsSL "$SOURCEURL")
+source <(curl -fsSL "$SOURCEURL") # Fetch bash script
 unset SOURCEURL
 
-# Prompt for hostname
-dhcp_hostname::prompt
+dhcp_hostname::prompt # Prompt for hostname
+build_container # Create the container (CTID assigned here)
 
-# Create the container (CTID assigned here)
-build_container
+# ------------------------------------------------------------------
+# Proxmox Notes (lazy include on first use)
+# ------------------------------------------------------------------
+
+# Load notes helper only when we actually start writing notes
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/includes/notes.include.sh"
+source <(curl -fsSL "$SOURCEURL") # Fetch bash script
+unset SOURCEURL
+
+notes::init "Provisioning notes for ${APP} (CTID ${CTID})" # Clean notes once
+
+# NOTES
+NOTES_BLOCK="$(cat <<EOF
+System:
+- OS: ${var_os}
+- Version: ${var_version}
+- Unprivileged: ${var_unprivileged}
+
+Resources:
+- CPU: ${var_cpu}
+- RAM: ${var_ram} MB
+- Disk: ${var_disk} GB
+EOF
+)"
+notes::append "$NOTES_BLOCK"  # write system and resource info
+unset NOTES_BLOCK
 
 # Configure hostname + DHCP publishing inside the container
 dhcp_hostname::apply
+
+
+
+# NOTES
+NOTES_BLOCK="$(cat <<EOF
+Networking:
+- Hostname: ${DHCP_HOSTNAME:-unknown}
+- CTID: ${CTID}
+EOF
+)"
+notes::append "$NOTES_BLOCK"  # Networking info
+unset NOTES_BLOCK
+
 # ------------------------------------------------------------------
 
 description
