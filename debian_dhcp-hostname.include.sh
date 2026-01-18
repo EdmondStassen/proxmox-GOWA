@@ -9,6 +9,25 @@
 #   build_container
 #   dhcp_hostname::apply    # after build_container
 
+# USE THE FOLLOWING CODE TO INCLUDE AND EXECUTE THIS BASH SCRIPT (without END COMMENT lines)
+: <<'END_COMMENT'
+# ------------------------------------------------------------------
+# DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
+# ------------------------------------------------------------------
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/debian_dhcp-hostname.include.sh"
+source <(curl -fsSL "$SOURCEURL")
+unset SOURCEURL
+
+# Prompt for hostname
+dhcp_hostname::prompt
+
+# Create the container (CTID assigned here)
+build_container
+
+# Configure hostname + DHCP publishing inside the container
+dhcp_hostname::apply
+# ------------------------------------------------------------------
+END_COMMENT
 
 dhcp_hostname::prompt() {
   # If caller already set var_hostname, don't prompt
