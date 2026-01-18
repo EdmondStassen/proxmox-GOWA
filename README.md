@@ -11,7 +11,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-sc
 Include scripts:
 
 <b>DNS HOSTNAME </b>
-# ------------------------------------------------------------------
+'''# ------------------------------------------------------------------
 # DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
 # ------------------------------------------------------------------
 SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/debian_dhcp-hostname.include.sh"
@@ -26,4 +26,4 @@ build_container
 
 # Configure hostname + DHCP publishing inside the container
 dhcp_hostname::apply
-# ------------------------------------------------------------------
+# ------------------------------------------------------------------'''
