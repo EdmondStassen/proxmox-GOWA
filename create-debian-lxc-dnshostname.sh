@@ -40,7 +40,9 @@ start
 # ------------------------------------------------------------------
 # DNS hostname publishing (FULLY SELF-CONTAINED BLOCK)
 # ------------------------------------------------------------------
-source <(curl -fsSL https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/includes/dhcp-hostname.include.sh)
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/debian_dhcp-hostname.include.sh"
+source <(curl -fsSL "$SOURCEURL")
+unset SOURCEURL
 
 # Prompt for hostname
 dhcp_hostname::prompt
