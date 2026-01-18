@@ -19,7 +19,7 @@
 # ------------------------------------------------------------------
 # Notes helper include (SELF-CONTAINED BLOCK)
 # ------------------------------------------------------------------
-SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/main/includes/notes.include.sh"
+SOURCEURL="https://raw.githubusercontent.com/EdmondStassen/proxmox-scripts/refs/heads/main/proxmox_notes.include.sh"
 source <(curl -fsSL "$SOURCEURL")
 unset SOURCEURL
 
